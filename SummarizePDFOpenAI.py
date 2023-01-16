@@ -18,7 +18,7 @@ def getPaper(paper_url, filename="random_paper.pdf"):
 def showPaperSummary(paperContent):
     tldr_tag = "\n tl;dr:"
     openai.organization = ''
-    openai.api_key = "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"
+    openai.api_key = ""
     model_list = openai.Model.list() 
     
     for page in paperContent:    
