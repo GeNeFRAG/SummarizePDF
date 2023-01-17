@@ -64,7 +64,7 @@ except:
     print("Error: Unable to read openai.toml file.")
     sys.exit(1)
 
-# Getting max_tokens and PDF URL from command line
+# Getting max_tokens, PDF URL and local filename from command line
 if len(sys.argv) == 1:
     raise Exception("Usage: SummarizePDFOpenAI <maxtokens> <URL to PDF> <optional: filename>")
     sys.exit(1)
