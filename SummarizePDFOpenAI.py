@@ -21,12 +21,12 @@ def showPaperSummary(paperContent):
     model_list = openai.Model.list() 
     
     for page in paperContent:    
-        text = page.extract_text() + tldr_tag
+        text = page.extract_text(layout=True) + tldr_tag
         text = "Analyse and Summarize following text in short sentences: " + text
     
         response = openai.Completion.create(model="text-davinci-003",prompt=text,temperature=0.3,
-            max_tokens=2048,
-            top_p=1,
+            max_tokens=maxtoken,
+            top_p=0.9,
             frequency_penalty=0.2,
             presence_penalty=0.2,
             echo=False,
@@ -44,8 +44,10 @@ with open("openai.toml","rb") as f:
 
 #Getting PDF URl from command line
 if len(sys.argv) == 1:
-    raise Exception("URL to PDF missing")
-url=sys.argv[1]
+    raise Exception("Usage: SummarizePDFOpenAI <maxtokens> <URL to PDF>")
+
+maxtoken=int(sys.argv[1])
+url=sys.argv[2]
 
 paperFilePath = getPaper(url)
 paperContent = pdfplumber.open(paperFilePath).pages
