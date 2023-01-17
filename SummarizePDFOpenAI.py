@@ -39,7 +39,7 @@ def showPaperSummary(paperContent):
             # Call the OpenAI API to generate summary
             response = openai.Completion.create(model="text-davinci-003",prompt=text,temperature=0.3,
                 max_tokens=maxtoken,
-                top_p=0.9,
+                top_p=1,
                 frequency_penalty=0.2,
                 presence_penalty=0.2,
                 echo=False,
@@ -49,6 +49,7 @@ def showPaperSummary(paperContent):
             print(response["choices"][0]["text"])
     except:
         print("Error: Unable to generate summary for the paper.")
+        sys.exit(1)
 
 """
 This code is reading out the OpenAI API keys and organization from a toml file, then getting the max_tokens and URL of a PDF from the command line. It then downloads the PDF and displays a summary of it to std out.
@@ -57,14 +58,16 @@ This code is reading out the OpenAI API keys and organization from a toml file, 
 try:
     with open("openai.toml","rb") as f:
         data = tomli.load(f)
-        openai.api_key=data["apikey"]
-        openai.organization=data["organization"]
+        openai.api_key=data["openai"]["apikey"]
+        openai.organization=data["openai"]["organization"]
 except:
     print("Error: Unable to read openai.toml file.")
+    sys.exit(1)
 
 # Getting max_tokens and PDF URL from command line
 if len(sys.argv) == 1:
     raise Exception("Usage: SummarizePDFOpenAI <maxtokens> <URL to PDF>")
+    sys.exit(1)
 
 maxtoken=int(sys.argv[1])
 url=sys.argv[2]
