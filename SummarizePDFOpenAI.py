@@ -6,6 +6,11 @@ import numpy as np
 import sys
 import tomli
 
+"""
+This function downloads a paper from the provided URL and saves it with the provided filename or 
+a default filename of "random_paper.pdf". It then returns the path to the downloaded paper. 
+If an error occurs when downloading the paper, it prints an error message and returns None. 
+"""
 def getPaper(paper_url, filename="random_paper.pdf"):
     try:
         # Download the paper from the provided url, with the provided filename or default filename
@@ -18,6 +23,14 @@ def getPaper(paper_url, filename="random_paper.pdf"):
 
     return downloadedPaperFilePath
 
+
+"""
+This function takes in a paperContent and prints out a summary of the paper. It first checks if the 
+paperContent is None and returns if it is. It then creates a tldr tag to be added at the end of each summary.
+It then calls the OpenAI API to generate a summary with certain parameters such as
+temperature, max_tokens, top_p, frequency_penalty, presence_penalty, echo and stop.
+Finally it prints out the generated summary. 
+"""
 def showPaperSummary(paperContent):
     if paperContent is None:
         return
@@ -43,6 +56,11 @@ def showPaperSummary(paperContent):
     except:
         print("Error: Unable to generate summary for the paper.")
 
+"""
+This code is reading out the OpenAI API keys and organization from a toml file,
+then getting the max_tokens and URL of a PDF from the command line. 
+It then downloads the PDF and displays a summary of it to std out.
+"""
 # Reading out OpenAI API keys and organization
 try:
     with open("openai.toml","rb") as f:
