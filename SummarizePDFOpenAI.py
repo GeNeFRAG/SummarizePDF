@@ -9,7 +9,7 @@ import tomli
 """
 This function downloads a paper from the provided URL and saves it with the provided filename or a default filename of "random_paper.pdf". It then returns the path to the downloaded paper. If an error occurs when downloading the paper, it prints an error message and returns None. 
 """
-def getPaper(paper_url, filename="random_paper.pdf"):
+def getPaper(paper_url, filename):
     try:
         # Download the paper from the provided url, with the provided filename or default filename
         downloadedPaper = wget.download(paper_url, filename)    
@@ -66,12 +66,16 @@ except:
 
 # Getting max_tokens and PDF URL from command line
 if len(sys.argv) == 1:
-    raise Exception("Usage: SummarizePDFOpenAI <maxtokens> <URL to PDF>")
+    raise Exception("Usage: SummarizePDFOpenAI <maxtokens> <URL to PDF> <optional: filename>")
     sys.exit(1)
 
 maxtoken=int(sys.argv[1])
 url=sys.argv[2]
+try:
+    filename=sys.argv[3]
+except: 
+    filename="random_paper.pdf"
 
-paperFilePath = getPaper(url)
+paperFilePath = getPaper(url,filename)
 paperContent = pdfplumber.open(paperFilePath).pages
 showPaperSummary(paperContent)
