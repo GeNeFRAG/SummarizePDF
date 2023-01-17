@@ -37,9 +37,11 @@ def showPaperSummary(paperContent):
             text = page.extract_text(layout=True) + tldr_tag
             text = "Analyse and Summarize following text in short sentences: " + text
             # Call the OpenAI API to generate summary
-            response = openai.Completion.create(model="text-davinci-003",prompt=text,temperature=0.3,
+            response = openai.Completion.create(
+                model="text-davinci-003",
+                prompt=text,
+                temperature=1,
                 max_tokens=maxtoken,
-                top_p=1,
                 frequency_penalty=0.2,
                 presence_penalty=0.2,
                 echo=False,
