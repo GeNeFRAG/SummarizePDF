@@ -24,7 +24,7 @@
 
 <h2>Example</h2>
 <pre>
-<code>python SummarizePDFOpenAI.py 200 https://arxiv.org/pdf/1906.01185.pdf mypaper.pdf</code>
+<code>python PDF_AI_Sum.py 200 https://arxiv.org/pdf/1906.01185.pdf mypaper.pdf</code>
 </pre>
 <p>This will generate summary of the paper with 200 tokens</p>
 
