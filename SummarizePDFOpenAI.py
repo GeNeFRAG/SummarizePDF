@@ -70,9 +70,13 @@ except:
 if len(sys.argv) == 1:
     raise Exception("Usage: SummarizePDFOpenAI <maxtokens> <URL to PDF> <optional: filename>")
     sys.exit(1)
-
-maxtoken=int(sys.argv[1])
-url=sys.argv[2]
+try:
+    maxtoken=int(sys.argv[1])
+    url=sys.argv[2]
+except Exception as e:
+    print("Error retrieving commandline arguments")
+    print(e)
+    sys.exit(1)
 try:
     filename=sys.argv[3]
 except: 
