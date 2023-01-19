@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html>
+<body>
 <h1>Summary of PDF using OpenAI</h1>
 
 <p>This script uses the OpenAI API to summarize a given PDF document. The script uses the <code>pdfplumber</code> and <code>wget</code> libraries to download and read the PDF, and the <code>openai</code> library to generate summaries.</p>
@@ -28,14 +31,10 @@
 </pre>
 <p>This will generate summary of the paper with 200 tokens</p>
 
-<h2>Note</h2>
+<h2>Notes</h2>
 <ul>
-  <li>It will download the pdf to your local machine in the same folder where the script is running</li>
-  <li>The script will return one summary per page in the input pdf</li>
   <li>It will use the OpenAI's <code>text-davinci-003</code> model to generate summary</li>
   <li>The script uses default parameter value of temperature, max_tokens, top_p, frequency_penalty, presence_penalty and echo.</li>
-  <li>It will stop generating summary after encountering new line character "\n"</li>
-  <li>It will print the summary on the console.</li>
 </ul>
 
 <h2>Limitations</h2>
@@ -43,3 +42,5 @@
   <li>This script uses OpenAI API to generate summary which has usage limit based on the plan you have subscribed to.</li>
   <li>It will only work for PDF documents.</li>
 </ul>
+</body>
+</html>
