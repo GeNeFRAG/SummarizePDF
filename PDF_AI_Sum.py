@@ -19,7 +19,6 @@ def getPaper(paper_url, filename):
 
     return downloadedPaperFilePath
 
-
 # This function takes in a paperContent and prints out a summary of the paper. It first checks if the paperContent is None and returns if it is. It then creates a tldr tag to be added at the end of each summary It then calls the OpenAI API to generate a summary with certain parameters such as temperature, max_tokens, top_p, frequency_penalty, presence_penalty, echo and stop. Finally it prints out the generated summary. 
 def showPaperSummary(paperContent):
     if paperContent is None:
