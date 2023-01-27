@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 # Getting Google Drive URL from cmd line
 if len(sys.argv) == 1:
-    print("Usage: SummarizePDFOpenAI <Google Driver URL>")
+    print("Usage: SummarizePDFOpenAI <Google Drive URL>")
     sys.exit(1)
 try:
     url=sys.argv[1]
