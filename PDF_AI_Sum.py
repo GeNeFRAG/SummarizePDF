@@ -13,8 +13,9 @@ def getPaper(paper_url, filename):
         downloadedPaper = wget.download(paper_url, filename)    
         # Get the path to the downloaded paper
         downloadedPaperFilePath = pathlib.Path(downloadedPaper)
-    except:
+    except Exception as e:
         print("Error: Unable to download paper from provided URL.")
+        print(e)
         return None
 
     return downloadedPaperFilePath
@@ -60,7 +61,7 @@ except:
 
 # Getting max_tokens, PDF URL and local filename from command line
 if len(sys.argv) == 1:
-    raise Exception("Usage: SummarizePDFOpenAI <maxtokens> <URL to PDF> <optional: filename>")
+    print("Usage: SummarizePDFOpenAI <maxtokens> <URL to PDF> <optional: filename>")
     sys.exit(1)
 try:
     maxtoken=int(sys.argv[1])
@@ -75,5 +76,13 @@ except:
     filename="random_paper.pdf"
 
 paperFilePath = getPaper(url,filename)
-paperContent = pdfplumber.open(paperFilePath).pages
+if(paperFilePath == None): sys.exit(1)
+
+try:
+    paperContent = pdfplumber.open(paperFilePath).pages
+except Exception as e:
+    print("Error opening PDF")
+    print(e)
+    sys.exit(1)
+
 showPaperSummary(paperContent)
