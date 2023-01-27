@@ -45,9 +45,10 @@ def showPaperSummary(paperContent):
             )
             # Print the summary
             print(response["choices"][0]["text"])
-    except:
+    except Exception as e:
         print("Error: Unable to generate summary for the paper.")
-        sys.exit(1)
+        print(e)
+        return None
 
 # Reading out OpenAI API keys and organization
 try:
