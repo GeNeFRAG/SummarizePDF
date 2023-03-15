@@ -24,8 +24,8 @@ file_key = (path.split("/"))[3]
 new_url = parsed_url.scheme + "://" + parsed_url.netloc + "/uc?export=download&id="  + file_key
 
 # Escaping the new url
-new_url_e = re.escape(new_url)
+#new_url_e = re.escape(new_url)
 
 #Printing the new url
 print("Converted Google Drive URL")
-print(new_url_e)
+print(new_url)
