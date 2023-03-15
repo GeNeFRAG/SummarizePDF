@@ -75,7 +75,7 @@ except:
 
 # Getting max_tokens, PDF URL and local filename from command line
 if len(sys.argv) < 3:
-    print("Usage: SummarizePDFOpenAI <language> <URL to PDF> <optional: filename>")
+    print("Usage: PDF_AI_Sum.py <language> <URL to PDF> <optional: filename>")
     sys.exit(1)
 try:
     lang=sys.argv[1]
