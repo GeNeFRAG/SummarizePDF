@@ -31,20 +31,33 @@ def showPaperSummary(paperContent):
 
         for page in paperContent:    
             text = page.extract_text(layout=True) + tldr_tag
-            text = "Analyse and Summarize following text in short sentences: " + text
+            prompt = "Analyse and Summarize following text in short sentences and reply in " + lang + ": " + text
             # Call the OpenAI API to generate summary
+            '''
             response = openai.Completion.create(
                 model="text-davinci-003",
                 prompt=text,
                 temperature=1,
                 max_tokens=maxtoken,
-                frequency_penalty=0.2,
+                frequency_penalty=0.2
                 presence_penalty=0.2,
                 echo=False,
                 stop=["\n"]
             )
             # Print the summary
             print(response["choices"][0]["text"])
+            '''
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a super smart academic researcher looking for truth"},
+                    {"role": "user", "content": prompt}, 
+                ]
+            )
+
+            # Print the summary
+            print(response['choices'][0]['message']['content'])
+
     except Exception as e:
         print("Error: Unable to generate summary for the paper.")
         print(e)
@@ -61,11 +74,11 @@ except:
     sys.exit(1)
 
 # Getting max_tokens, PDF URL and local filename from command line
-if len(sys.argv) == 1:
-    print("Usage: SummarizePDFOpenAI <maxtokens> <URL to PDF> <optional: filename>")
+if len(sys.argv) < 3:
+    print("Usage: SummarizePDFOpenAI <language> <URL to PDF> <optional: filename>")
     sys.exit(1)
 try:
-    maxtoken=int(sys.argv[1])
+    lang=sys.argv[1]
     url=sys.argv[2]
 except Exception as e:
     print("Error retrieving commandline arguments")
