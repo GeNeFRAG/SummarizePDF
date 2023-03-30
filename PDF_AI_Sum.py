@@ -7,7 +7,6 @@ import pdfplumber
 import tomli
 import wget
 
-
 # This function downloads a paper from the provided URL and saves it with the provided filename or a default filename of "random_paper.pdf". It then returns the path to the downloaded paper. If an error occurs when downloading the paper, it prints an error message and returns None. 
 def getPaper(paper_url, filename):
     try:
