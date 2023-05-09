@@ -5,7 +5,29 @@ import numpy as np
 import openai
 import pdfplumber
 import tomli
-import wget
+import wget#
+
+def get_arg(arg_name, default=None):
+    """
+    Safely reads a command line argument by name.
+    :param arg_name: the name of the argument to read.
+    :param default: the default value to return if the argument is not found.
+    :return: the value of the argument if found, or the default value.
+    """
+    if "--help" in sys.argv:
+        print("Usage: python PD_AI_Sum.py [--help] [--lang] [--url] [--ofile]")
+        print("Arguments:")
+        print("\t--help\t\tHelp\t\tNone")
+        print("\t--lang\t\tLanguage\tEnglish")
+        print("\t--url\t\tPDF URL\t\tNone")
+        print("\t--ofile\t\tOutpout file\trandom_paper.pdf")
+        # Add more argument descriptions here as needed
+        sys.exit(0)
+    try:
+        arg_value = sys.argv[sys.argv.index(arg_name) + 1]
+        return arg_value
+    except (IndexError, ValueError):
+        return default
 
 # This function downloads a paper from the provided URL and saves it with the provided filename or a default filename of "random_paper.pdf". It then returns the path to the downloaded paper. If an error occurs when downloading the paper, it prints an error message and returns None. 
 def getPaper(paper_url, filename):
@@ -75,23 +97,15 @@ except:
     sys.exit(1)
 
 # Getting max_tokens, PDF URL and local filename from command line
-if len(sys.argv) < 3:
-    print("Usage: PDF_AI_Sum.py <language> <URL to PDF> <optional: filename>")
-    sys.exit(1)
-try:
-    lang=sys.argv[1]
-    url=sys.argv[2]
-except Exception as e:
-    print("Error retrieving commandline arguments")
-    print(e)
-    sys.exit(1)
-try:
-    filename=sys.argv[3]
-except: 
-    filename="random_paper.pdf"
+lang=get_arg('--lang', "English")
+url=get_arg('--url', None)
+ofile=get_arg('--ofile','random_paper.pdf')
 
-paperFilePath = getPaper(url,filename)
-if(paperFilePath == None): sys.exit(1)
+if(url == None):
+    print("Type “--help\" for more information.")
+    sys.exit(1)
+
+paperFilePath = getPaper(url,ofile)
 
 try:
     paperContent = pdfplumber.open(paperFilePath).pages
