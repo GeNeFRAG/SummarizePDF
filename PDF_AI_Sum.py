@@ -54,26 +54,13 @@ def showPaperSummary(paperContent):
 
         for page in paperContent:    
             text = page.extract_text(layout=True) + tldr_tag
-            prompt = "Analyse and Summarize following text in short sentences and reply in " + lang + ": " + text
+            prompt = "Analyse and Summarize following text extract from a PDF. Keep the answer short and concise. Respond \"Unsure about answer\" if not sure about the answer. Reply in " + lang + ": " + text
+           
             # Call the OpenAI API to generate summary
-            '''
-            response = openai.Completion.create(
-                model="text-davinci-003",
-                prompt=text,
-                temperature=1,
-                max_tokens=maxtoken,
-                frequency_penalty=0.2
-                presence_penalty=0.2,
-                echo=False,
-                stop=["\n"]
-            )
-            # Print the summary
-            print(response["choices"][0]["text"])
-            '''
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "You are a super smart academic researcher looking for truth"},
+                    {"role": "system", "content": "You are an AI research assistant. You use a tone that is technical and scientific."},
                     {"role": "user", "content": prompt}, 
                 ]
             )
