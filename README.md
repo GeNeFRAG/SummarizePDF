@@ -20,14 +20,15 @@
 
 <p>To use the script, you need to provide the OpenAI API key and organization in the <code>openai.toml</code> file. The script takes three command line arguments:</p>
 <ol>
-  <li><code>Language</code> : Language of the Chat API response</li>
-  <li><code>URL to PDF</code>: URL of the PDF that needs to be summarized</li>
-  <li><code>filename (optional)</code>: Optional local filename under which the PDF is stored</li>
+  <li><code>--lang</code> : Language of the Chat API response</li>
+  <li><code>--url</code>: URL of the PDF that needs to be summarized</li>
+  <li><code>--ofile</code>: Optional local filename under which the PDF is stored</li>
+  <li><code>--help</code>: Prints help</li>
 </ol>
 
 <h2>Example</h2>
 <pre>
-<code>python PDF_AI_Sum.py French https://arxiv.org/pdf/1906.01185.pdf mypaper.pdf</code>
+<code>python PDF_AI_Sum.py --lang French --url https://arxiv.org/pdf/1906.01185.pdf mypaper.pdf</code>
 </pre>
 <p>This will generate a French summary of the paper</p>
 
