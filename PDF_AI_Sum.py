@@ -54,13 +54,19 @@ def showPaperSummary(paperContent):
 
         for page in paperContent:    
             text = page.extract_text(layout=True) + tldr_tag
-            prompt = "Analyse and Summarize following text extract from a PDF. Keep the answer short and concise. The prompt is send in a loop for every page. Ignore PDF Metadata information, table of contents, credits, headers, footers, etc. Respond \"Unsure about answer\" if not sure about the answer. Reply in " + lang + ": " + text
+            prompt = "Analyse and Summarize following text extract from a PDF. Keep the answer short \
+                        and concise. The prompt is send in a loop for every page. Ignore PDF Metadata \
+                        information, table of contents, credits, headers, footers, etc. \
+                        Respond \"Unsure about answer\" if not sure about the answer. Reply in " + lang + ": " + text
            
             # Call the OpenAI API to generate summary
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "You are an AI research assistant. You use a tone that is technical and scientific and the respone grammatically correct in bulletpoint sentances."},
+                    {"role": "system", "content": "You are an AI research assistant. You use a tone that is \
+                                                    technical and scientific and the respone grammatically correct \
+                                                    in bulletpoint sentances."
+                    },
                     #{"role": "assistant", "content": "Sure! To summarize a PDF, you can start by identifying the main topic or theme of the Page, and then highlighting the most important information or key points mentioned. You can also condense longer sentences and remove any unnecessary details. Would you like me to provide more details on this?"},
                     {"role": "user", "content": prompt}, 
                 ]
