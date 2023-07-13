@@ -5,7 +5,26 @@ import numpy as np
 import openai
 import pdfplumber
 import tomli
-import wget#
+import wget
+
+def get_completion(prompt, model):
+    messages = [{"role": "user", "content": prompt}]
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        temperature=0, # this is the degree of randomness of the model's output
+    )
+    return response.choices[0].message["content"]
+
+def optimize_text_for_api(text, max_tokens):
+    tokenized_text = text.split()  # Tokenize the text by splitting on spaces
+    if len(tokenized_text) > max_tokens:
+        tokenized_text = tokenized_text[:max_tokens]  # Truncate the text to fit within the token limit
+        optimized_text = ' '.join(tokenized_text)  # Join the tokens back into a string
+        print("Text has been optimized to fit within the token limit.")
+        return optimized_text
+    else:
+        return text
 
 def get_arg(arg_name, default=None):
     """
@@ -50,31 +69,32 @@ def showPaperSummary(paperContent):
     try:
         # tldr tag to be added at the end of each summary
         tldr_tag = "\n tl;dr:"
-        model_list = openai.Model.list() 
-
-        for page in paperContent:    
+        #model_list = openai.Model.list() 
+        responses = ""
+        for page in paperContent:   
             text = page.extract_text(layout=True) + tldr_tag
-            prompt = "Analyse and Summarize following text extract from a PDF. Keep the answer short \
-                        and concise. The prompt is send in a loop for every page. Ignore PDF Metadata \
-                        information, table of contents, credits, headers, footers, etc. \
-                        Respond \"Unsure about answer\" if not sure about the answer. Reply in " + lang + ": " + text
-           
+            prompt = f"""You will be provided with text from any PDF delimited by triple backtips.\
+                        Your task is to summarize the chunks in an executive summary style. \
+                        Provide the answer in at most 5 bulletpoint sentences and at most 100 words. \
+                        Respond \"Unsure about answer\" if not sure about the answer. \
+                        Reply in Language {lang}.\
+                        ```{text}```
+                        """
+            
             # Call the OpenAI API to generate summary
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are an AI research assistant. You use a tone that is \
-                                                    technical and scientific and the respone grammatically correct \
-                                                    in bulletpoint sentances."
-                    },
-                    #{"role": "assistant", "content": "Sure! To summarize a PDF, you can start by identifying the main topic or theme of the Page, and then highlighting the most important information or key points mentioned. You can also condense longer sentences and remove any unnecessary details. Would you like me to provide more details on this?"},
-                    {"role": "user", "content": prompt}, 
-                ]
-            )
+            response = get_completion(prompt, gptmodel)
 
-            # Print the summary
-            print(response['choices'][0]['message']['content'])
+            # Store the summary
+            responses = responses + response
+        
+        responses = optimize_text_for_api(responses, maxtokens)
 
+        prompt = f"""Your task is to remove duplicate or similar information in provided text delimited by triple backtips. \
+                Your task is to create smooth transitions between each bulletpoint.
+        ```{responses}```
+                """
+        response = get_completion(prompt, gptmodel)
+        print(response)
     except Exception as e:
         print("Error: Unable to generate summary for the paper.")
         print(e)
@@ -86,6 +106,8 @@ try:
         data = tomli.load(f)
         openai.api_key=data["openai"]["apikey"]
         openai.organization=data["openai"]["organization"]
+        gptmodel = data["openai"]["model"]
+        maxtokens = int(data["openai"]["maxtokens"])
 except:
     print("Error: Unable to read openai.toml file.")
     sys.exit(1)
