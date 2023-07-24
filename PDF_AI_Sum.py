@@ -83,9 +83,7 @@ def show_page_summary(paperContent):
             text = page.extract_text(layout=True) + tldr_tag
             text = clean_text(text)
             prompt = f"""You will be provided with text from any PDF delimited by triple backtips.\
-                        Your task is to summarize the chunks in an executive summary style. \
-                        Provide the answer in at most 5 bulletpoint sentences and at most 100 words. \
-                        Respond \"Unsure about answer\" if not sure about the answer. \
+                        Your task is to summarize the chunks in a distinguished analytical executive summary style. \
                         Reply in Language {lang}.\
                         ```{text}```
                         """
@@ -99,7 +97,7 @@ def show_page_summary(paperContent):
         responses = clean_text(responses)
 
         prompt = f"""Your task is to remove duplicate or similar information in provided text delimited by triple backtips. \
-                Keep the bulletpoint sentance format. \
+                 Provide the answer in at most 5 bulletpoint sentences and keep the tone of the text and at most 100 words. \
                 Your task is to create smooth transitions between each bulletpoint.
         ```{responses}```
                 """
