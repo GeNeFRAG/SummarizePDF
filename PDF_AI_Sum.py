@@ -1,11 +1,29 @@
 import pathlib
+import re
+import string
 import sys
 
-import numpy as np
 import openai
 import pdfplumber
 import tomli
 import wget
+
+
+def clean_text(text):
+    # Remove line breaks and replace with spaces
+    text = text.replace('\n', ' ')
+    
+    # Normalize whitespace (remove extra spaces, tabs, etc.)
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    # Handle special characters (replace with spaces or remove them)
+    special_characters = string.punctuation + "“”‘’"
+    text = ''.join(char if char not in special_characters else ' ' for char in text)
+    
+    # Remove consecutive spaces
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    return text
 
 def get_completion(prompt, model, temperature=0):
     messages = [{"role": "user", "content": prompt}]
@@ -15,17 +33,6 @@ def get_completion(prompt, model, temperature=0):
         temperature=temperature, # this is the degree of randomness of the model's output
     )
     return response.choices[0].message["content"]
-
-def optimize_text_for_api(text, max_tokens):
-    text = text.replace('\r', ' ').replace('\n', ' ')
-    tokenized_text = text.split()  # Tokenize the text by splitting on spaces
-    if len(tokenized_text) > max_tokens:
-        tokenized_text = tokenized_text[:max_tokens]  # Truncate the text to fit within the token limit
-        optimized_text = ' '.join(tokenized_text)  # Join the tokens back into a string
-        print("Text has been optimized to fit within the token limit.")
-        return optimized_text
-    else:
-        return text
 
 def get_arg(arg_name, default=None):
     """
@@ -50,7 +57,7 @@ def get_arg(arg_name, default=None):
         return default
 
 # This function downloads a paper from the provided URL and saves it with the provided filename or a default filename of "random_paper.pdf". It then returns the path to the downloaded paper. If an error occurs when downloading the paper, it prints an error message and returns None. 
-def getPaper(paper_url, filename):
+def download_paper(paper_url, filename):
     try:
         # Download the paper from the provided url, with the provided filename or default filename
         downloadedPaper = wget.download(paper_url, filename)    
@@ -64,7 +71,7 @@ def getPaper(paper_url, filename):
     return downloadedPaperFilePath
 
 # This function takes in a paperContent and prints out a summary of the paper. It first checks if the paperContent is None and returns if it is. It then creates a tldr tag to be added at the end of each summary It then calls the OpenAI API to generate a summary with certain parameters such as temperature, max_tokens, top_p, frequency_penalty, presence_penalty, echo and stop. Finally it prints out the generated summary. 
-def showPaperSummary(paperContent):
+def show_page_summary(paperContent):
     if paperContent is None:
         return
     try:
@@ -74,6 +81,7 @@ def showPaperSummary(paperContent):
         responses = ""
         for page in paperContent:   
             text = page.extract_text(layout=True) + tldr_tag
+            text = clean_text(text)
             prompt = f"""You will be provided with text from any PDF delimited by triple backtips.\
                         Your task is to summarize the chunks in an executive summary style. \
                         Provide the answer in at most 5 bulletpoint sentences and at most 100 words. \
@@ -88,13 +96,14 @@ def showPaperSummary(paperContent):
             # Store the summary
             responses = responses + response
         
-        responses = optimize_text_for_api(responses, maxtokens)
+        responses = clean_text(responses)
 
         prompt = f"""Your task is to remove duplicate or similar information in provided text delimited by triple backtips. \
+                Keep the bulletpoint sentance format. \
                 Your task is to create smooth transitions between each bulletpoint.
         ```{responses}```
                 """
-        response = get_completion(prompt, gptmodel)
+        response = get_completion(prompt, gptmodel, 0.2)
         print(response)
     except Exception as e:
         print("Error: Unable to generate summary for the paper.")
@@ -122,7 +131,7 @@ if(url == None):
     print("Type “--help\" for more information.")
     sys.exit(1)
 
-paperFilePath = getPaper(url,ofile)
+paperFilePath = download_paper(url, ofile)
 
 try:
     paperContent = pdfplumber.open(paperFilePath).pages
@@ -131,4 +140,4 @@ except Exception as e:
     print(e)
     sys.exit(1)
 
-showPaperSummary(paperContent)
+show_page_summary(paperContent)
