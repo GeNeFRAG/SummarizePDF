@@ -96,7 +96,7 @@ def show_page_summary(paperContent):
         
         responses = clean_text(responses)
 
-        prompt = f"""Your task is to remove duplicate or similar information in provided text delimited by triple backtips. \
+        prompt = f"""Your task is to remove duplicate or redundant information in the provided text delimited by triple backtips. \
                  Provide the answer in at most 5 bulletpoint sentences and keep the tone of the text and at most 100 words. \
                 Your task is to create smooth transitions between each bulletpoint.
         ```{responses}```
