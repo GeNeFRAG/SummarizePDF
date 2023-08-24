@@ -8,20 +8,15 @@ import pdfplumber
 import tomli
 import wget
 
+SPECIAL_CHARACTERS = string.punctuation + "“”‘’"
+PATTERN = re.compile(r'[\n\s]+')
 
 def clean_text(text):
-    # Remove line breaks and replace with spaces
-    text = text.replace('\n', ' ')
-    
-    # Normalize whitespace (remove extra spaces, tabs, etc.)
-    text = re.sub(r'\s+', ' ', text).strip()
+   # Replace line breaks and consecutive whitespace with a single space
+    text = re.sub(PATTERN, ' ', text).strip()
     
     # Handle special characters (replace with spaces or remove them)
-    special_characters = string.punctuation + "“”‘’"
-    text = ''.join(char if char not in special_characters else ' ' for char in text)
-    
-    # Remove consecutive spaces
-    text = re.sub(r'\s+', ' ', text).strip()
+    text = ''.join(char if char not in SPECIAL_CHARACTERS else ' ' for char in text)
     
     return text
 
@@ -51,7 +46,8 @@ def get_arg(arg_name, default=None):
         # Add more argument descriptions here as needed
         sys.exit(0)
     try:
-        arg_value = sys.argv[sys.argv.index(arg_name) + 1]
+        arg_index = sys.argv.index(arg_name)
+        arg_value = sys.argv[arg_index + 1]
         return arg_value
     except (IndexError, ValueError):
         return default
@@ -76,9 +72,9 @@ def show_page_summary(paperContent):
         return
     try:
         # tldr tag to be added at the end of each summary
-        tldr_tag = "\n tl;dr:"
-        #model_list = openai.Model.list() 
+        tldr_tag = "\n tl;dr:" 
         responses = ""
+        print(f"Summarizing PDF using OpenAI completion API with model {gptmodel}")
         for page in paperContent:   
             text = page.extract_text(layout=True) + tldr_tag
             text = clean_text(text)
@@ -90,16 +86,14 @@ def show_page_summary(paperContent):
             
             # Call the OpenAI API to generate summary
             response = get_completion(prompt, gptmodel)
-
-            # Store the summary
             responses = responses + response
         
         responses = clean_text(responses)
-
+        print(f"Remove duplicate or redundant information using OpenAI completion API with model {gptmodel}")
         prompt = f"""Your task is to remove duplicate or redundant information in the provided text delimited by triple backtips. \
                  Provide the answer in at most 5 bulletpoint sentences and keep the tone of the text and at most 100 words. \
                 Your task is to create smooth transitions between each bulletpoint.
-        ```{responses}```
+                ```{responses}```
                 """
         response = get_completion(prompt, gptmodel, 0.2)
         print(response)
@@ -112,13 +106,14 @@ def show_page_summary(paperContent):
 try:
     with open("openai.toml","rb") as f:
         data = tomli.load(f)
-        openai.api_key=data["openai"]["apikey"]
-        openai.organization=data["openai"]["organization"]
-        gptmodel = data["openai"]["model"]
-        maxtokens = int(data["openai"]["maxtokens"])
 except:
     print("Error: Unable to read openai.toml file.")
     sys.exit(1)
+
+openai.api_key=data["openai"]["apikey"]
+openai.organization=data["openai"]["organization"]
+gptmodel = data["openai"]["model"]
+maxtokens = int(data["openai"]["maxtokens"])
 
 # Getting max_tokens, PDF URL and local filename from command line
 lang=get_arg('--lang', "English")
@@ -128,14 +123,17 @@ ofile=get_arg('--ofile','random_paper.pdf')
 if(url == None):
     print("Type “--help\" for more information.")
     sys.exit(1)
-
+print(f"Downloading PDF")
 paperFilePath = download_paper(url, ofile)
 
 try:
-    paperContent = pdfplumber.open(paperFilePath).pages
+    pdf = pdfplumber.open(paperFilePath)
+    paperContent = pdf.pages
 except Exception as e:
     print("Error opening PDF")
     print(e)
     sys.exit(1)
+finally:
+    pdf.close()
 
 show_page_summary(paperContent)
