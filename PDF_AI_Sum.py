@@ -7,95 +7,7 @@ import openai
 import pdfplumber
 import tomli
 import wget
-
-SPECIAL_CHARACTERS = string.punctuation + "“”‘’"
-PATTERN = re.compile(r'[\n\s]+')
-
-def clean_text(text):
-    """
-    Cleans a given text by replacing line breaks, consecutive whitespace, and handling special characters.
-
-    Args:
-    text (str): The input text to be cleaned.
-
-    Returns:
-    str: The cleaned text.
-
-    Example:
-    >>> dirty_text = "This is a\ndirty    text!!"
-    >>> clean_text(dirty_text)
-    'This is a dirty text  '
-    """
-   # Replace line breaks and consecutive whitespace with a single space
-    text = re.sub(PATTERN, ' ', text).strip()
-    
-    # Handle special characters (replace with spaces or remove them)
-    text = ''.join(char if char not in SPECIAL_CHARACTERS else ' ' for char in text)
-    
-    return text
-
-def get_completion(prompt, model, temperature=0):
-    """
-    Retrieves a completion using the OpenAI ChatCompletion API with the specified model and parameters.
-
-    Args:
-    prompt (str): The user's input or prompt for generating the completion.
-    model (str): The OpenAI model identifier (e.g., "gpt-3.5-turbo").
-    temperature (float, optional): The degree of randomness in the model's output (default is 0).
-                                   A higher value makes the output more random, while a lower value makes it more deterministic.
-
-    Returns:
-    str: The generated completion text.
-
-    Example:
-    >>> user_prompt = "Translate the following English text to French: 'Hello, how are you?'"
-    >>> model_id = "gpt-3.5-turbo"
-    >>> get_completion(user_prompt, model_id, temperature=0.7)
-    'Bonjour, comment ça va ?'
-    """
-    messages = [{"role": "user", "content": prompt}]
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=temperature, # this is the degree of randomness of the model's output
-    )
-    return response.choices[0].message["content"]
-
-def get_arg(arg_name, default=None):
-    """
-    Retrieves the value of a command-line argument by its name from the sys.argv list.
-
-    Args:
-    arg_name (str): The name of the command-line argument to retrieve.
-    default: The default value to return if the argument is not found (default is None).
-
-    Returns:
-    str or default: The value of the specified command-line argument or the default value if not found.
-
-    Example:
-    >>> # Assuming the command-line arguments are ['--lang', 'English', '--url', 'example.com']
-    >>> get_arg('--lang', 'Spanish')
-    'English'
-    >>> get_arg('--url', 'localhost')
-    'example.com'
-    >>> get_arg('--port', 8080)
-    8080
-    """
-    if "--help" in sys.argv:
-        print("Usage: python PD_AI_Sum.py [--help] [--lang] [--url] [--ofile]")
-        print("Arguments:")
-        print("\t--help\t\tHelp\t\tNone")
-        print("\t--lang\t\tLanguage\tEnglish")
-        print("\t--url\t\tPDF URL\t\tNone")
-        print("\t--ofile\t\tOutpout file\trandom_paper.pdf")
-        # Add more argument descriptions here as needed
-        sys.exit(0)
-    try:
-        arg_index = sys.argv.index(arg_name)
-        arg_value = sys.argv[arg_index + 1]
-        return arg_value
-    except (IndexError, ValueError):
-        return default
+from GPTCommons import GPTCommons
 
 def download_paper(paper_url, filename):
     """
@@ -157,7 +69,7 @@ def show_page_summary(paperContent):
         print(f"Summarizing PDF using OpenAI completion API with model {gptmodel}")
         for page in paperContent:   
             text = page.extract_text(layout=True) + tldr_tag
-            text = clean_text(text)
+            text = commons.clean_text(text)
             prompt = f"""You will be provided with text from any PDF delimited by triple backtips.\
                         Your task is to summarize the chunks in a distinguished analytical executive summary style. \
                         Reply in Language {lang}.\
@@ -165,22 +77,25 @@ def show_page_summary(paperContent):
                         """
             
             # Call the OpenAI API to generate summary
-            response = get_completion(prompt, gptmodel)
+            response = commons.get_completion(prompt, gptmodel)
             responses = responses + response
         
-        responses = clean_text(responses)
+        responses = commons.clean_text(responses)
         print(f"Remove duplicate or redundant information using OpenAI completion API with model {gptmodel}")
         prompt = f"""Your task is to remove duplicate or redundant information in the provided text delimited by triple backtips. \
                  Provide the answer in at most 5 bulletpoint sentences and keep the tone of the text and at most 100 words. \
                 Your task is to create smooth transitions between each bulletpoint.
                 ```{responses}```
                 """
-        response = get_completion(prompt, gptmodel, 0.2)
+        response = commons.get_completion(prompt, gptmodel, 0.2)
         print(response)
     except Exception as e:
         print("Error: Unable to generate summary for the paper.")
         print(e)
         return None
+    
+# Initialize GPT utilities module
+commons = GPTCommons()
 
 # Reading out OpenAI API keys and organization
 try:
@@ -196,9 +111,9 @@ gptmodel = data["openai"]["model"]
 maxtokens = int(data["openai"]["maxtokens"])
 
 # Getting max_tokens, PDF URL and local filename from command line
-lang=get_arg('--lang', "English")
-url=get_arg('--url', None)
-ofile=get_arg('--ofile','random_paper.pdf')
+lang=commons.get_arg('--lang', "English")
+url=commons.get_arg('--url', None)
+ofile=commons.get_arg('--ofile','random_paper.pdf')
 
 if(url == None):
     print("Type “--help\" for more information.")
