@@ -1,3 +1,4 @@
+__pycache__/
 random_paper*.pdf
 summary.txt
 openai.toml
