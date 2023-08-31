@@ -35,8 +35,8 @@ def download_paper(paper_url, filename):
         # Get the path to the downloaded paper
         downloadedPaperFilePath = pathlib.Path(downloadedPaper)
     except Exception as e:
-        print("Error: Unable to download paper from provided URL.")
-        print(e)
+        print(f"Error: Unable to download paper from provided URL.")
+        print(f"{e}")
         return None
 
     return downloadedPaperFilePath
@@ -71,27 +71,27 @@ def show_page_summary(paperContent):
             text = page.extract_text(layout=True) + tldr_tag
             text = commons.clean_text(text)
             prompt = f"""You will be provided with text from any PDF delimited by triple backtips.\
-                        Your task is to summarize the chunks in a distinguished analytical executive summary style. \
+                        Your task is to summarize the chunks in a distinguished analytical summary style. \
                         Reply in Language {lang}.\
                         ```{text}```
                         """
             
             # Call the OpenAI API to generate summary
-            response = commons.get_completion(prompt, gptmodel)
+            response = commons.get_completion(prompt, gptmodel, temperature)
             responses = responses + response
         
         responses = commons.clean_text(responses)
         print(f"Remove duplicate or redundant information using OpenAI completion API with model {gptmodel}")
         prompt = f"""Your task is to remove duplicate or redundant information in the provided text delimited by triple backtips. \
-                 Provide the answer in at most 5 bulletpoint sentences and keep the tone of the text and at most 100 words. \
+                 Provide the answer in at most 5 bulletpoint sentences and keep the tone of the text and at most 500 words. \
                 Your task is to create smooth transitions between each bulletpoint.
                 ```{responses}```
                 """
-        response = commons.get_completion(prompt, gptmodel, 0.2)
-        print(response)
+        response = commons.get_completion(prompt, gptmodel, temperature)
+        print(f"{response}")
     except Exception as e:
-        print("Error: Unable to generate summary for the paper.")
-        print(e)
+        print(f"Error: Unable to generate summary for the paper.")
+        print(f"{e}")
         return None
     
 # Initialize GPT utilities module
@@ -101,14 +101,19 @@ commons = GPTCommons()
 try:
     with open("openai.toml","rb") as f:
         data = tomli.load(f)
-except:
-    print("Error: Unable to read openai.toml file.")
+except Exception as e:
+    print(f"Error: Unable to read openai.toml file.")
+    print(f"{e}")
     sys.exit(1)
 
 openai.api_key=data["openai"]["apikey"]
 openai.organization=data["openai"]["organization"]
 gptmodel = data["openai"]["model"]
 maxtokens = int(data["openai"]["maxtokens"])
+temperature = float(data["openai"]["temperature"])
+print(f"gptmodel={gptmodel}")
+print(f"maxtokens={maxtokens}")
+print(f"temperature={temperature}")
 
 # Getting max_tokens, PDF URL and local filename from command line
 lang=commons.get_arg('--lang', "English")
@@ -116,7 +121,7 @@ url=commons.get_arg('--url', None)
 ofile=commons.get_arg('--ofile','random_paper.pdf')
 
 if(url == None):
-    print("Type “--help\" for more information.")
+    print(f"Type “--help\" for more information.")
     sys.exit(1)
 print(f"Downloading PDF")
 paperFilePath = download_paper(url, ofile)
@@ -125,8 +130,8 @@ try:
     pdf = pdfplumber.open(paperFilePath)
     paperContent = pdf.pages
 except Exception as e:
-    print("Error opening PDF")
-    print(e)
+    print(f"Error opening PDF")
+    print(f"{e}")
     sys.exit(1)
 finally:
     pdf.close()
