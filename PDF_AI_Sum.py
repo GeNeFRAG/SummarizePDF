@@ -1,6 +1,4 @@
 import pathlib
-import re
-import string
 import sys
 
 import openai
