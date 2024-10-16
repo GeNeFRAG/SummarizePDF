@@ -75,17 +75,18 @@ def show_page_summary(paperContent):
                         """
             
             # Call the OpenAI API to generate summary
-            response = commons.get_completion(prompt, gptmodel, temperature)
+            response = commons.get_chat_completion(prompt, gptmodel, temperature)
             responses = responses + response
         
         responses = commons.clean_text(responses)
+        responses = commons.reduce_to_max_tokens(responses, maxtokens, gptmodel)
         print(f"Remove duplicate or redundant information using OpenAI completion API with model {gptmodel}")
         prompt = f"""Your task is to remove duplicate or redundant information in the provided text delimited by triple backtips. \
                  Provide the answer in at most 5 bulletpoint sentences and keep the tone of the text and at most 500 words. \
                 Your task is to create smooth transitions between each bulletpoint.
                 ```{responses}```
                 """
-        response = commons.get_completion(prompt, gptmodel, temperature)
+        response = commons.get_chat_completion(prompt, gptmodel, temperature)
         print(f"{response}")
     except Exception as e:
         print(f"Error: Unable to generate summary for the paper.")
