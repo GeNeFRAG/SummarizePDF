@@ -87,6 +87,13 @@ def show_page_summary(paperContent):
 # Initialize GPT utilities module
 commons = GPTCommons.initialize_gpt_commons("openai.toml")
 
+arg_descriptions = {
+    "--help": "Help",
+    "--lang": "Language (default: English)",
+    "--url": "URL",
+    "--ofile": "Output file name"
+}
+
 # Getting max_tokens, PDF URL and local filename from command line
 lang=commons.get_arg('--lang', "English")
 url=commons.get_arg('--url', None)
