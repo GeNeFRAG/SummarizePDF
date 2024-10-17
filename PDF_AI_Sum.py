@@ -1,9 +1,7 @@
 import pathlib
 import sys
 
-import openai
 import pdfplumber
-import tomli
 import wget
 from GPTCommons import GPTCommons
 
@@ -64,29 +62,22 @@ def show_page_summary(paperContent):
         # tldr tag to be added at the end of each summary
         tldr_tag = "\n tl;dr:" 
         responses = ""
-        print(f"Summarizing PDF using OpenAI completion API with model {gptmodel}")
+        print(f"Summarizing PDF using OpenAI completion API with model {commons.get_gptmodel()}")
         for page in paperContent:   
             text = page.extract_text(layout=True) + tldr_tag
             text = commons.clean_text(text)
-            prompt = f"""You will be provided with text from any PDF delimited by triple backtips.\
-                        Your task is to summarize the chunks in a distinguished analytical summary style. \
-                        Reply in Language {lang}.\
-                        ```{text}```
-                        """
+            prompt = f"""Summarize the following PDF text in an analytical style. Reply in {lang}. Text: ```{text}```"""
             
             # Call the OpenAI API to generate summary
-            response = commons.get_chat_completion(prompt, gptmodel, temperature)
+            response = commons.get_chat_completion(prompt)
             responses = responses + response
         
         responses = commons.clean_text(responses)
-        responses = commons.reduce_to_max_tokens(responses, maxtokens, gptmodel)
-        print(f"Remove duplicate or redundant information using OpenAI completion API with model {gptmodel}")
-        prompt = f"""Your task is to remove duplicate or redundant information in the provided text delimited by triple backtips. \
-                 Provide the answer in at most 5 bulletpoint sentences and keep the tone of the text and at most 500 words. \
-                Your task is to create smooth transitions between each bulletpoint.
-                ```{responses}```
-                """
-        response = commons.get_chat_completion(prompt, gptmodel, temperature)
+        responses = commons.reduce_to_max_tokens(responses)
+        print(f"Remove duplicate or redundant information using OpenAI completion API with model {commons.get_gptmodel()}") 
+        prompt = f"""Remove duplicate or redundant information from the text below, keeping the tone consistent. Provide the answer in at most 5 bullet points, with smooth transitions between each point, and a maximum of 500 words.
+                    Text: ```{responses}```"""
+        response = commons.get_chat_completion(prompt)
         print(f"{response}")
     except Exception as e:
         print(f"Error: Unable to generate summary for the paper.")
@@ -94,25 +85,7 @@ def show_page_summary(paperContent):
         return None
     
 # Initialize GPT utilities module
-commons = GPTCommons()
-
-# Reading out OpenAI API keys and organization
-try:
-    with open("openai.toml","rb") as f:
-        data = tomli.load(f)
-except Exception as e:
-    print(f"Error: Unable to read openai.toml file.")
-    print(f"{e}")
-    sys.exit(1)
-
-openai.api_key=data["openai"]["apikey"]
-openai.organization=data["openai"]["organization"]
-gptmodel = data["openai"]["model"]
-maxtokens = int(data["openai"]["maxtokens"])
-temperature = float(data["openai"]["temperature"])
-print(f"gptmodel={gptmodel}")
-print(f"maxtokens={maxtokens}")
-print(f"temperature={temperature}")
+commons = GPTCommons.initialize_gpt_commons("openai.toml")
 
 # Getting max_tokens, PDF URL and local filename from command line
 lang=commons.get_arg('--lang', "English")
