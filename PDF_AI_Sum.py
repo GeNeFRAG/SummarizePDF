@@ -40,7 +40,7 @@ def download_paper(paper_url, filename):
 
     return downloadedPaperFilePath
 
-def show_page_summary(paperContent, output_file=None):
+def show_page_summary(paperContent, output_file=None, to_html=False, detail_level='analytical', max_words=200):
     """
     Generates a summary of a PDF document's pages, removes duplicate or redundant information, and prints the result.
     If an output file is specified, writes the summary to the file instead of printing it.
@@ -68,11 +68,12 @@ def show_page_summary(paperContent, output_file=None):
         # tldr tag to be added at the end of each summary
         tldr_tag = "\n tl;dr:" 
         responses = ""
-        print(f"Summarizing PDF using OpenAI completion API with model {commons.get_gptmodel()}...")
+        print(f"Summarizing PDF using OpenAI completion API with model {commons.get_gptmodel()}. Detail level {detail_level}, max. words {max_words}...")
         for page in paperContent:   
             text = page.extract_text(layout=True) + tldr_tag
             text = commons.clean_text(text)
-            prompt = f"""Summarize the following PDF text in an analytical style. Reply in {lang}. Text: ```{text}```"""
+            prompt = f"""Extract the key points and main ideas from the following webpage text in an {detail_level} style. 
+                            Focus on the most important information and key statements. Reply in {lang}.  Text: ```{text}```"""
             
             # Call the OpenAI API to generate summary
             response = commons.get_chat_completion(prompt)
@@ -85,18 +86,12 @@ def show_page_summary(paperContent, output_file=None):
         
         responses = commons.reduce_to_max_tokens(responses)
         print(f"Removing duplicate or redundant information using OpenAI completion API with model {commons.get_gptmodel()}...") 
-        prompt = f"""Remove duplicate or redundant information from the text below, keeping the tone consistent. Provide the answer in at most 5 bullet points, with smooth transitions between each point, and a maximum of 500 words.
+        prompt = f"""Remove duplicate or redundant information from the text below, keeping the tone consistent. Provide the answer in bullet points, and a maximum of {max_words} words.
                     Text: ```{responses}```"""
         response = commons.get_chat_completion(prompt)
         
-        if output_file:
-            print(f"Writing summary to output file: {output_file}")
-            with open(output_file, 'w') as f:
-                f.write(response)
-            print("Summary written to file successfully.")
-        else:
-            print("Summary generation complete. Here is the summarized text:")
-            print(response)
+        commons.write_summary_to_file(response, output_file, to_html)
+
     except Exception as e:
         print(f"Error: Unable to generate summary for the paper.")
         print(f"{e}")
@@ -111,7 +106,10 @@ arg_descriptions = {
     "--lang": "Language (default: English)",
     "--url": "URL",
     "--ofile": "Output file name",
-    "--output": "Output file for summary"
+    "--output": "Output file for summary",
+    "--html": "Convert output to HTML format (default: False)",
+    "--detail_level": "Detail level (default: analytical)",
+    "--max_words": "Maximum number of words of the summary (default: 200)"
 }
 
 # Getting max_tokens, PDF URL, local filename, and output file from command line
@@ -120,6 +118,14 @@ lang = commons.get_arg('--lang', arg_descriptions, 'English')
 url = commons.get_arg('--url', arg_descriptions, None)
 ofile = commons.get_arg('--ofile', arg_descriptions, 'random_paper.pdf')
 output_file = commons.get_arg('--output', arg_descriptions, None)
+to_html = commons.get_arg('--html', arg_descriptions, 'False').lower() == 'true'
+detail_level = commons.get_arg('--detail_level', arg_descriptions, 'analytical')
+# Parse max_length with error handling
+try:
+    max_words = int(commons.get_arg('--max_words', arg_descriptions, 200))
+except ValueError:
+    print("Error: Invalid value for --max_words. It must be an integer. Using default value of 200.")
+    max_words = 200
 
 if url is None:
     print("Error: URL not provided. Type '--help' for more information.")
@@ -143,5 +149,5 @@ except Exception as e:
     sys.exit(1)
 
 print("Generating summary for the PDF content...")
-show_page_summary(paperContent, output_file)
+show_page_summary(paperContent, output_file, to_html, detail_level, max_words)
 pdf.close()
