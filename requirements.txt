@@ -1,0 +1,7 @@
+wget
+pdfplumber
+re
+tiktoken
+tomli
+requests
+openai
