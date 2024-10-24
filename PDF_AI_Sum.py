@@ -30,7 +30,7 @@ def download_paper(paper_url, filename):
         print(f"Downloading paper from URL: {paper_url}")
         downloadedPaper = wget.download(paper_url, filename)
         print(f"\nDownload complete. Saved as: {filename}")
-        # Convert the downloaded paper path to a pathlib.Path object
+        # Convert the downloaded paper path to a pathlib.Path objectgd
         downloadedPaperFilePath = pathlib.Path(downloadedPaper)
     except Exception as e:
         # Print error message if download fails
@@ -101,11 +101,6 @@ def show_page_summary(paperContent, output_file=None, to_html=False, detail_leve
 print("Initializing GPTCommons utility class...")
 commons = GPTCommons.initialize_gpt_commons("openai.toml")
 
-# Check if the model exisits
-print("Checking if the model exists...")
-if not commons.is_valid_gpt_model(commons.get_gptmodel()):
-    sys.exit(1) 
-
 arg_descriptions = {
     "--help": "Help",
     "--lang": "Language (default: English)",
@@ -135,6 +130,11 @@ except ValueError:
 if url is None:
     print("Error: URL not provided. Type '--help' for more information.")
     sys.exit(1)
+
+# Check if the model exisits
+print("Checking if the model exists...")
+if not commons.is_valid_gpt_model(commons.get_gptmodel()):
+    sys.exit(1) 
 
 print(f"Downloading PDF from URL: {url}")
 paperFilePath = download_paper(url, ofile)
